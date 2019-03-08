@@ -1,14 +1,15 @@
-from flask import Flask, render_template, session
-
-
-app = Flask(__name__)
-app.secret_key = 'F@iL0V3R_c1u5TeR'
+from models import *
 
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html', title='Smoke - Главная', session=session)
+    return render_template('index.html', title='Smoke - Main', session=session)
+
+
+@app.route('/catalog')
+def catalog():
+    return render_template('catalog.html', title='Smoke - Catalog', session=session)
 
 
 if __name__ == '__main__':
