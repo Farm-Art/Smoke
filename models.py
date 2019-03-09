@@ -9,7 +9,6 @@ db = SQLAlchemy(app)
 
 
 class User(db.Model):
-    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
@@ -23,53 +22,52 @@ class User(db.Model):
 
 
 class Software(db.Model):
-    __tablename__ = 'softwares'
     id = db.Column(db.Integer, primary_key=True)
-    developer = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    title = db.Column(db.String(80), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.String(1000), unique=False, nullable=False)
-    link = db.Column(db.String(100), unique=False, nullable=False)
-    approved = db.Column(db.Boolean, unique=False, nullable=False)
+    screenshots = db.relationship('Screenshot', backref='software', lazy=True)
+    link = db.Column(db.String(100), unique=True, nullable=False)
     news = db.relationship('News', backref='software', lazy=True)
-    reviews = db.relationship('Review', backref='product', lazy=True)
+    reviews = db.relationship('Review', backref='software', lazy=True)
 
     def __repr__(self):
         return '<Software {}>'.format(self.title)
 
 
-class News(db.Model):
-    __tablename__ = 'news_list'
+class Screenshot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    software_id = db.Column(db.Integer, db.ForeignKey('softwares.id'), nullable=False)
-    title = db.Column(db.String(100), unique=False, nullable=False)
-    contents = db.Column(db.String(1000), unique=False, nullable=False)
-    comments = db.relationship('Comment', backref='onenews', lazy=True)
+    software_id = db.Column(db.Integer, db.ForeignKey('software.id'), nullable=False)
+    link = db.Column(db.String(100), unique=True, nullable=False)
+    caption = db.Column(db.String(100), unique=False, nullable=False)
+    description = db.Column(db.String(200), unique=False, nullable=False)
 
     def __repr__(self):
-        return '<News {} {}>'.format(self.title, self.software)
+        return '<Screenshot {} {}>'.format(self.caption, self.software)
+
+
+class News(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    software_id = db.Column(db.Integer, db.ForeignKey('software.id'), nullable=False)
+    title = db.Column(db.String(100), unique=False, nullable=False)
+    body = db.Column(db.String(1000), unique=False, nullable=False)
+    comments = db.relationship('Comment', backref='news', lazy=True)
 
 
 class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    news = db.Column(db.Integer, db.ForeignKey('news_list.id'), nullable=False)
-    contents = db.Column(db.String(1000), unique=False, nullable=False)
-
-    def __repr__(self):
-        return '<Comment {} {}>'.format(self.author, self.news)
+    news_id = db.Column(db.Integer, db.ForeignKey('news.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    body = db.Column(db.String(500), unique=False, nullable=False)
 
 
 class Review(db.Model):
-    __tablename__ = 'reviews'
     id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    software = db.Column(db.Integer, db.ForeignKey('softwares.id'), nullable=False)
-    rating = db.Column(db.String(100), unique=False, nullable=False)
-    contents = db.Column(db.String(1000), unique=False, nullable=False)
-
-    def __repr__(self):
-        return '<Review {} {}>'.format(self.author, self.software)
+    software_id = db.Column(db.Integer, db.ForeignKey('software.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    rating = db.Column(db.Integer, unique=False, nullable=False)
+    body = db.Column(db.String(1000), unique=False, nullable=False)
 
 
 db.create_all()
