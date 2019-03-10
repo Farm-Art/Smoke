@@ -1,9 +1,10 @@
 from flask import *
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = Flask(__name__)
-app.secret_key = 'F@iL0V3R_c1u5TeR'
+app.secret_key = generate_password_hash('F@iL0V3R_c1u5TeR')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db/smoke.db'
 db = SQLAlchemy(app)
 
@@ -12,7 +13,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
-    account_type = db.Column(db.String(20), unique=False, nullable=False)
+    password_hash = db.Column(db.String(100), unique=False, nullable=False)
+    account_type = db.Column(db.String(5), unique=False, nullable=False)
     softwares = db.relationship('Software', backref='user', lazy=True)
     comments = db.relationship('Comment', backref='user', lazy=True)
     reviews = db.relationship('Review', backref='user', lazy=True)

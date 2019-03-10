@@ -1,10 +1,34 @@
 from models import *
+from forms import *
+from sqlalchemy.exc import IntegrityError
 
 
 @app.route('/')
 @app.route('/index')
 def index():
     return render_template('index.html', title='Smoke - Main', session=session)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        try:
+            user = User(username=form.username.data,
+                        email=form.email.data,
+                        password_hash=generate_password_hash(form.password.data),
+                        account_type=form.account_type.data)
+            db.session.add(user)
+            db.session.commit()
+        except IntegrityError:
+            return render_template('register.html', title='Smoke - Register',
+                                   form=form,
+                                   errors=['Another user with this email/username already exists!'])
+        else:
+            session['user'] = user
+
+            return redirect('/index')
+    return render_template('register.html', title='Smoke - Register', form=form)
 
 
 @app.route('/catalog')
@@ -27,6 +51,7 @@ def product_page(id):
                                logged_in=logged_in)
     else:
         return abort(404)
+
 
 @app.errorhandler(404)
 def page_not_found(error):
