@@ -54,5 +54,7 @@
     {% endfor %}
     {% if logged_in and session.user_id != product.user_id %}
     <h4><a href="/product/{{ product.id }}/add_review">Leave</a> a review</h4>
+    {% else %}
+    <h4><a href="/delete_software/{{ product.id }}">Delete software</a></h4>
     {% endif %}
 {% endblock %}

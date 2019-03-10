@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Add software</h1>
+    <form action="" method="post" novalidate>
+        <p>
+            {% for error in errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.title.label }}<br>
+            {{ form.title }}<br>
+        </p>
+        <p>
+            {{ form.description.label }}<br>
+            {{ form.description }}<br>
+        </p>
+        <p>
+            {{ form.screenshots.label }}<br>
+            Links to screenshots should be provided on separate lines.<br>
+            Every line should contain the caption, description and the link to the screenshot,
+            separated by semicolons (';').<br>
+            Example: "Level Editor;A screenshot of the built-in level editor;https://imgur.com/*link*"<br>
+            {{ form.screenshots }}<br>
+        </p>
+        <p>
+            {{ form.link.label }}<br>
+            {{ form.link }}<br>
+        </p>
+        <p>
+            {{ form.submit() }}
+        </p>
+    </form>
+{% endblock %}

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, SubmitField, validators
+from wtforms import StringField, PasswordField, SelectField, SubmitField, TextAreaField, validators
 
 
 class RegisterForm(FlaskForm):
@@ -15,3 +15,30 @@ class LoginForm(FlaskForm):
     username = StringField('Username', [validators.required()])
     password = PasswordField('Password', [validators.required()])
     submit = SubmitField('Login')
+
+
+class AddNewsForm(FlaskForm):
+    title = StringField('Title', [validators.required()])
+    body = TextAreaField('Contents', [validators.required()])
+    submit = SubmitField('Publish')
+
+class AddCommentForm(FlaskForm):
+    body = TextAreaField('Comment', [validators.required()])
+    submit = SubmitField('Publish')
+
+
+class AddSoftwareForm(FlaskForm):
+    title = StringField('Title')
+    description = TextAreaField('Description')
+    screenshots = TextAreaField('Screenshots')
+    link = StringField('Download link')
+    submit = SubmitField('Publish')
+
+
+class AddReviewForm(FlaskForm):
+    rating = SelectField('Rating', choices=[('Horrible', 'Horrible'),
+                                            ('Below average', 'Below average'),
+                                            ('Average', 'Average'),
+                                            ('Above average', 'Above average'),
+                                            ('Great', 'Great')])
+    body = TextAreaField('Contents')

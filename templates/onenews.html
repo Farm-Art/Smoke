@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ news.title }}</h1>
+    <p>{{ news.body }}</p>
+    <hr>
+    {% for comment in comments %}
+    <h3>{{ comment.user.username }}</h3>
+    <p>{{ comment.body }}</p>
+    {% if logged_in and comment.user_id == user_id %}
+    <h5><a href="/delete_comment/{{ comment.id }}">Delete comment</a></h5>
+    {% endfor %}
+    {% if logged_in %}
+    <h5><a href="/product/{{ news.software_id }}/news/{{ news.id }}/add_comment">Leave a comment</a></h5>
+    {% endif %}
+{% endblock %}

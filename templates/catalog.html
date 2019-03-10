@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>Product Catalog</h1>
+    {% if account_type == "dev" %}
+        <h3><a href="/add_software">Publish Software</a></h3>
+    {% endif %}
     {% for product in products %}
         <a href="/products/{{product.id}}"><h2>{{ product.title }}</h2></a>
         <div id="carouselProduct{{ product.id }}Controls" class="carousel slide" data-ride="carousel"
