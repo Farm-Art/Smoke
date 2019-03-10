@@ -35,10 +35,4 @@
         <p>{{ product.description }}</p>
         <hr>
     {% endfor %}
-    {% if page > 1 %}
-    <a href="/catalog/{{ page }}">Previous Page</a>
-    {% endif %}
-    {% if page * 10 > length %}
-    <a href="/catalog/{{ page + 2 }}">Next Page</a>
-    {% endif %}
 {% endblock %}
