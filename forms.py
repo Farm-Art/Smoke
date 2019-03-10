@@ -9,3 +9,9 @@ class RegisterForm(FlaskForm):
     account_type = SelectField('Account type', choices=[('def', 'Default'),
                                                         ('dev', 'Developer')])
     submit = SubmitField('Register')
+
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', [validators.required()])
+    password = PasswordField('Password', [validators.required()])
+    submit = SubmitField('Login')

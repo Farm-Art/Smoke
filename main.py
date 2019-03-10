@@ -25,10 +25,31 @@ def register():
                                    form=form,
                                    errors=['Another user with this email/username already exists!'])
         else:
-            session['user'] = user
-
+            session['user_id'] = user.id
             return redirect('/index')
     return render_template('register.html', title='Smoke - Register', form=form)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            if check_password_hash(user.password_hash, form.password.data):
+                return redirect('/index')
+            else:
+                return render_template('login.html',
+                                       title='Smoke - Login',
+                                       form=form,
+                                       errors=['Incorrect password'])
+        else:
+            return render_template('login.html',
+                                   title='Smoke - Login',
+                                   form=form,
+                                   errors=['No such user found!'])
+    return render_template('login.html', title='Smoke - Login',
+                           form=form)
 
 
 @app.route('/catalog')
