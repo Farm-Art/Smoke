@@ -2,13 +2,13 @@
 {% block content %}
     <h1>News, related to {{ product.title }}:</h1>
     {% if is_developer %}
-    <h4><a href="/product/{{ product.id }}/news/add_news"></a></h4>
+    <h4><a href="{{ url_for('add_news', id=product.id) }}"></a></h4>
     {% endif %}
     {% for onenews in news %}
         <h3>{{ onenews.title }}</h3>
         <p>{{ onenews.body }}</p>
         {% if is_developer %}
-        <h4><a href="/product/{{ product.id }}/news/delete_news/{{ onenews.id }}">Delete news</a></h4>
+        <h4><a href="{{ url_for('delete_news', id=onenews.id) }}">Delete news</a></h4>
         {% endif %}
         <hr>
     {% endfor %}

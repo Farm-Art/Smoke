@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>{{ product.title }}</h1>
-    <h3>Developed by: {{ product.developer.username }}</h3>
+    <h3>Developed by: {{ product.user.username }}</h3>
     <p>{{ product.description }}</p>
     <div id="carouselProduct{{ product.id }}Controls" class="carousel slide" data-ride="carousel"
          style="width: 600px;">
@@ -35,13 +35,13 @@
     <h3>Download now by clicking <a href="{{ product.link }}">this</a> link.</h3>
     {% if news %}
     <h2>Latest news:</h2>
-    <h3><a href="/news/{{ news.id ]}">{{ news.title }}</a></h3>
+    <h3><a href="/news/{{ news.id }}">{{ news.title }}</a></h3>
     <p>{{ news.body }}</p>
     <hr>
     <h4>Browse <a href="/product/{{ product.id }}/news">all news,</a> related to this product.</h4>
     <hr>
     {% endif %}
-    {% if logged_in and session.user.id == product.user_id %}
+    {% if logged_in and session.user_id == product.user_id %}
     <h4><a href="/product/{{ product.id }}/add_news">Add</a></h4>
     {% endif %}
     {% if reviews %}
@@ -54,7 +54,7 @@
     {% endfor %}
     {% if logged_in and session.user_id != product.user_id %}
     <h4><a href="/product/{{ product.id }}/add_review">Leave</a> a review</h4>
-    {% else %}
+    {% elif logged_in %}
     <h4><a href="/delete_software/{{ product.id }}">Delete software</a></h4>
     {% endif %}
 {% endblock %}

@@ -28,10 +28,10 @@ class AddCommentForm(FlaskForm):
 
 
 class AddSoftwareForm(FlaskForm):
-    title = StringField('Title')
-    description = TextAreaField('Description')
-    screenshots = TextAreaField('Screenshots')
-    link = StringField('Download link')
+    title = StringField('Title', [validators.required()])
+    description = TextAreaField('Description', [validators.required()])
+    screenshots = TextAreaField('Screenshots', [validators.required()])
+    link = StringField('Download link', [validators.required()])
     submit = SubmitField('Publish')
 
 
@@ -41,4 +41,5 @@ class AddReviewForm(FlaskForm):
                                             ('Average', 'Average'),
                                             ('Above average', 'Above average'),
                                             ('Great', 'Great')])
-    body = TextAreaField('Contents')
+    body = TextAreaField('Contents', [validators.required()])
+    submit = SubmitField('Publish')

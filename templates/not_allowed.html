@@ -2,5 +2,5 @@
 {% block content %}
     <h1>The server recognized your request, but refuses to perform it as you do not have the rights to do so.
     Prepare for the machine uprising.</h1>
-    <img src="static/img/403.png">
+    <img src="{{ url_for('static', filename='img/403.png') }}">
 {% endblock %}

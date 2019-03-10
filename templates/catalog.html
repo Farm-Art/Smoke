@@ -5,7 +5,7 @@
         <h3><a href="/add_software">Publish Software</a></h3>
     {% endif %}
     {% for product in products %}
-        <a href="/products/{{product.id}}"><h2>{{ product.title }}</h2></a>
+        <a href="{{ url_for('product_page', id=product.id) }}"><h2>{{ product.title }}</h2></a>
         <div id="carouselProduct{{ product.id }}Controls" class="carousel slide" data-ride="carousel"
         style="width: 600px;">
             <div class="carousel-inner">

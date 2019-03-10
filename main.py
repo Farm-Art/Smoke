@@ -29,7 +29,7 @@ def register():
         else:
             session['user_id'] = user.id
             session['username'] = user.username
-            return redirect('/index')
+            return redirect(url_for('index'))
     return render_template('register.html', title='Smoke - Register', form=form)
 
 
@@ -42,7 +42,7 @@ def login():
             if check_password_hash(user.password_hash, form.password.data):
                 session['user_id'] = user.id
                 session['username'] = user.username
-                return redirect('/index')
+                return redirect(url_for('index'))
             else:
                 return render_template('login.html',
                                        title='Smoke - Login',
@@ -64,7 +64,7 @@ def logout():
         session.pop('username')
     except KeyError:
         pass
-    return redirect('/index')
+    return redirect(url_for('index'))
 
 
 @app.route('/catalog')
@@ -86,12 +86,15 @@ def product_page(id):
     logged_in = 'username' in session
     product = Software.query.get(id)
     if product:
+        reviews = product.reviews
         news = product.news[0] if product.news else None
         return render_template('productpage.html',
                                title='Smoke - {}'.format(product.title),
                                session=session,
                                news=news,
-                               logged_in=logged_in)
+                               logged_in=logged_in,
+                               product=product,
+                               reviews=reviews)
     else:
         return abort(404)
 
@@ -141,7 +144,7 @@ def add_news(product_id):
                     body=form.body.data)
         db.session.add(news)
         db.session.commit()
-        return redirect('/product/{}/news'.format(product_id))
+        return redirect(url_for('all_news', id=product_id))
     if product:
         logged_in = 'username' in session
         if logged_in:
@@ -158,21 +161,23 @@ def add_news(product_id):
 @app.route('/add_software', methods=['GET', 'POST'])
 def add_software():
     logged_in = 'username' in session
-    form = AddSoftwareForm()
-    if form.validate_on_submit():
-        errors = []
-        if len(form.title.data) > 100:
-            errors.append('Title is too long! Max length - 100 symbols')
-        if len(form.description.data) > 1000:
-            errors.append('Description is too long! Max length - 1000 symbols')
-        if errors:
-            return render_template('add_software.html',
-                                   title='Smoke - Add Software',
-                                   logged_in=logged_in,
-                                   form=form,
-                                   errors=errors)
-        else:
-            software = Software(title=form.title.data,
+    if logged_in:
+        user = User.query.get(session['user_id'])
+        form = AddSoftwareForm()
+        if form.validate_on_submit():
+            errors = []
+            if len(form.title.data) > 100:
+                errors.append('Title is too long! Max length - 100 symbols')
+            if len(form.description.data) > 1000:
+                errors.append('Description is too long! Max length - 1000 symbols')
+            if errors:
+                return render_template('add_software.html',
+                                       title='Smoke - Add Software',
+                                       logged_in=logged_in,
+                                       form=form,
+                                       errors=errors)
+            software = Software(user_id=user.id,
+                                title=form.title.data,
                                 description=form.description.data,
                                 link=form.link.data)
             screenshots = form.screenshots.data.split('\n')
@@ -183,19 +188,15 @@ def add_software():
                                                        description=description))
             db.session.add(software)
             db.session.commit()
-            return redirect('/product/' + str(software.id))
-    if logged_in:
-        user = User.query.get(session['user_id'])
-        if user.account_type == 'dev':
-            return render_template('add_software.html',
-                                   title='Smoke - Add Software',
-                                   logged_in=logged_in,
-                                   form=form)
-        return abort(403)
+            return redirect(url_for('product_page', id=software.id))
+        return render_template('add_software.html',
+                               title='Smoke - Add Software',
+                               logged_in=logged_in,
+                               form=form)
     return abort(403)
 
 
-@app.route('/product/<int:id>/add_review')
+@app.route('/product/<int:id>/add_review', methods=['GET', 'POST'])
 def add_review(id):
     form = AddReviewForm()
     logged_in = 'username' in session
@@ -215,10 +216,11 @@ def add_review(id):
                                                'Your review is too long! Max length - 1000'])
                 review = Review(rating=form.rating.data,
                                 body=form.body.data,
-                                user_id=user.id)
+                                user_id=user.id,
+                                software_id=id)
                 db.session.add(review)
                 db.session.commit()
-                return redirect('/product/' + str(id))
+                return redirect(url_for('product_page', id=id))
             return render_template('add_review.html',
                                    title='Smoke - Add Review',
                                    form=form,
@@ -227,7 +229,7 @@ def add_review(id):
     return abort(403)
 
 
-@app.route('/product/<int:product_id>/news/<int:news_id>/add_comment')
+@app.route('/product/<int:product_id>/news/<int:news_id>/add_comment', methods=['GET', 'POST'])
 def add_comment(product_id, news_id):
     form = AddCommentForm()
     logged_in = 'username' in session
@@ -247,7 +249,7 @@ def add_comment(product_id, news_id):
                                   user_id=user.id)
                 db.session.add(comment)
                 db.session.commit()
-                return redirect('/product/{}/news/{}'.format(product_id, news_id))
+                return redirect(url_for('news', product_id=product_id, news_id=news_id))
             return render_template('add_comment.html',
                                    title='Smoke - Add Comment',
                                    form=form,
@@ -267,7 +269,7 @@ def delete_comment(id):
             if user.id == comment.user_id:
                 db.session.delete(comment)
                 db.session.commit()
-                return redirect('/product/{}/news/{}'.format(news.software_id, news.id))
+                return redirect(url_for('news', product_id=news.software_id, news_id=news.id))
             return abort(403)
         return abort(403)
     return abort(404)
@@ -284,7 +286,7 @@ def delete_news(id):
             if news in user.news:
                 db.session.delete(news)
                 db.session.commit()
-                return redirect('/product/{}/news'.format(product_id))
+                return redirect(url_for('all_news', id=product_id))
             return abort(403)
         return abort(403)
     return abort(404)
@@ -298,8 +300,15 @@ def delete_software(id):
         if logged_in:
             user = User.query.get(session['user_id'])
             if software in user.softwares:
+                for screenshot in software.screenshots:
+                    db.session.delete(screenshot)
+                for review in software.reviews:
+                    db.session.delete(review)
+                for news in software.news:
+                    db.session.delete(news)
                 db.session.delete(software)
                 db.session.commit()
+                return redirect(url_for('catalog'))
             return abort(403)
         return abort(403)
     return abort(404)
@@ -316,7 +325,7 @@ def delete_review(id):
                 product_id = review.software_id
                 db.session.delete(review)
                 db.session.commit()
-                return redirect('/product/' + str(product_id))
+                return redirect(url_for('product_page', id=product_id))
             return abort(403)
         return abort(403)
     return abort(404)
