@@ -35,14 +35,14 @@
     <h3>Download now by clicking <a href="{{ product.link }}">this</a> link.</h3>
     {% if news %}
     <h2>Latest news:</h2>
-    <h3><a href="/news/{{ news.id }}">{{ news.title }}</a></h3>
+    <h3><a href="{{ url_for('news', product_id=product.id, news_id=news.id) }}">{{ news.title }}</a></h3>
     <p>{{ news.body }}</p>
     <hr>
-    <h4>Browse <a href="/product/{{ product.id }}/news">all news,</a> related to this product.</h4>
+    <h4>Browse <a href="{{ url_for('all_news', id=product.id) }}">all news,</a> related to this product.</h4>
     <hr>
     {% endif %}
     {% if logged_in and session.user_id == product.user_id %}
-    <h4><a href="/product/{{ product.id }}/add_news">Add</a></h4>
+    <h4><a href="{{ url_for('add_news', product_id=product.id) }}">Add news</a></h4>
     {% endif %}
     {% if reviews %}
     <h2>Reviews for this product:</h2>
@@ -51,10 +51,12 @@
     <h4>Author: {{ review.user.username }}</h4>
     <h4>Rating: {{ review.rating }}</h4>
     <p>{{ review.body }}</p>
+    {% if review.user_id == session.user_id %}
+    <h4><a href="{{ url_for('delete_review', id=review.id) }}">Delete review</a></h4>
     {% endfor %}
     {% if logged_in and session.user_id != product.user_id %}
-    <h4><a href="/product/{{ product.id }}/add_review">Leave</a> a review</h4>
+    <h4><a href="{{ url_for('add_review', id=product.id) }}">Leave a review</a></h4>
     {% elif logged_in %}
-    <h4><a href="/delete_software/{{ product.id }}">Delete software</a></h4>
+    <h4><a href="{{ url_for('delete_software', id=product.id) }}">Delete software</a></h4>
     {% endif %}
 {% endblock %}

@@ -15,12 +15,12 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-item nav-link active" href="/index">Home<span class="sr-only">(current)</span></a>
-                    <a class="nav-item nav-link" href="/catalog">Catalog</a>
+                    <a class="nav-item nav-link active" href="{{ url_for('index') }}">Home<span class="sr-only">(current)</span></a>
+                    <a class="nav-item nav-link" href="{{ url_for('catalog') }}">Catalog</a>
                     {% if logged_in %}
-                    <a class="nav-item nav-link" href="/logout">{{ session['username'] }}</a>
+                    <a class="nav-item nav-link" href="{{ url_for('logout') }}">{{ session['username'] }}</a>
                     {% else %}
-                    <a class="nav-item nav-link" href="/login">Login</a>
+                    <a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>
                     {% endif %}
                 </div>
             </div>

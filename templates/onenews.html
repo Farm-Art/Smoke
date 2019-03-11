@@ -8,6 +8,7 @@
     <p>{{ comment.body }}</p>
     {% if logged_in and comment.user_id == user_id %}
     <h5><a href="{{ url_for('delete_comment', id=comment.id) }}">Delete comment</a></h5>
+    {% endif %}
     {% endfor %}
     {% if logged_in %}
     <h5><a href="{{ url_for('add_comment', product_id=product.id, news_id=news.id) }}">Leave a comment</a></h5>

@@ -126,12 +126,15 @@ def news(product_id, news_id):
         user_id = -1
         is_developer = False
     if Software.query.get(product_id):
-        return render_template('onenews.html',
-                               product=Software.query.get(product_id),
-                               news=News.query.get(news_id),
-                               is_developer=is_developer,
-                               logged_in=logged_in,
-                               user_id=user_id)
+        news = News.query.get(news_id)
+        if news:
+            return render_template('onenews.html',
+                                   product=Software.query.get(product_id),
+                                   news=News.query.get(news_id),
+                                   is_developer=is_developer,
+                                   logged_in=logged_in,
+                                   user_id=user_id,
+                                   comments=news.comments)
 
 
 @app.route('/product/<int:product_id>/news/add_news', methods=['GET', 'POST'])
@@ -246,7 +249,8 @@ def add_comment(product_id, news_id):
                                            errors=[
                                                'Your comment is too long! Max length - 1000'])
                 comment = Comment(body=form.body.data,
-                                  user_id=user.id)
+                                  user_id=user.id,
+                                  news_id=news.id)
                 db.session.add(comment)
                 db.session.commit()
                 return redirect(url_for('news', product_id=product_id, news_id=news_id))

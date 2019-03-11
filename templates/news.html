@@ -2,7 +2,7 @@
 {% block content %}
     <h1>News, related to {{ product.title }}:</h1>
     {% if is_developer %}
-    <h4><a href="{{ url_for('add_news', id=product.id) }}"></a></h4>
+    <h4><a href="{{ url_for('add_news', product_id=product.id) }}"></a></h4>
     {% endif %}
     {% for onenews in news %}
         <h3>{{ onenews.title }}</h3>

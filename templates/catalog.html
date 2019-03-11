@@ -2,7 +2,7 @@
 {% block content %}
     <h1>Product Catalog</h1>
     {% if account_type == "dev" %}
-        <h3><a href="/add_software">Publish Software</a></h3>
+        <h3><a href="{{ url_for('add_software') }}">Publish Software</a></h3>
     {% endif %}
     {% for product in products %}
         <a href="{{ url_for('product_page', id=product.id) }}"><h2>{{ product.title }}</h2></a>
@@ -10,7 +10,7 @@
         style="width: 600px;">
             <div class="carousel-inner">
                 <div class="carousel-item active">
-                    <img class="d-block w-100" src="{{product.screenshots[0].link}}" alt="thumbnail">
+                    <img class="d-block w-100" src="{{ product.screenshots[0].link }}" alt="thumbnail">
                     <div class="carousel-caption d-none d-md-block">
                         <h5>{{ product.screenshots[0].caption }}</h5>
                         <p>{{ product.screenshots[0].description }}</p>
