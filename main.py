@@ -3,11 +3,13 @@ from forms import *
 from sqlalchemy.exc import IntegrityError
 
 
-def check_for_logged_in():
+# Returns currently logged in user, if logged in, otherwise None
+def get_user():
     return User.query.get(session.get('user_id', 0))
 
 
-def check_for_permission(user, item_id, item_type):
+# Checks if the user is logged in, then returns the item or the error code
+def get_item(user, item_id, item_type):
     if user:
         item = item_type.query.get(item_id)
         if item:
@@ -19,7 +21,7 @@ def check_for_permission(user, item_id, item_type):
 @app.route('/')
 @app.route('/index')
 def index():
-    user = check_for_logged_in()
+    user = get_user()
     return render_template('index.html', title='Smoke - Main',
                            logged_in=user)
 
@@ -35,6 +37,8 @@ def register():
                         account_type=form.account_type.data)
             db.session.add(user)
             db.session.commit()
+        # IntegrityError is raised if the system failed to commit a change, in this case - another
+        # user with such email/username already existing.
         except IntegrityError:
             return render_template('register.html', title='Smoke - Register',
                                    form=form,
@@ -75,6 +79,8 @@ def logout():
     try:
         session.pop('user_id')
         session.pop('username')
+    # It's easier and (I presume) more efficient to simply prevent crashing
+    # rather than checking if the user is logged in.
     except KeyError:
         pass
     return redirect(url_for('index'))
@@ -82,7 +88,7 @@ def logout():
 
 @app.route('/catalog')
 def catalog():
-    user = check_for_logged_in()
+    user = get_user()
     if user:
         acc_type = user.account_type
     else:
@@ -96,7 +102,7 @@ def catalog():
 
 @app.route('/product/<int:id>')
 def product_page(id):
-    user = check_for_logged_in()
+    user = get_user()
     product = Software.query.get(id)
     if product:
         reviews = product.reviews
@@ -108,13 +114,12 @@ def product_page(id):
                                logged_in=user,
                                product=product,
                                reviews=reviews)
-    else:
-        return abort(404)
+    return abort(404)
 
 
 @app.route('/product/<int:id>/news')
 def all_news(id):
-    user = check_for_logged_in()
+    user = get_user()
     software = Software.query.get(id)
     if software:
         return render_template('news.html',
@@ -122,19 +127,17 @@ def all_news(id):
                                news=Software.query.get(id).news,
                                is_developer=software.user_id == user.id,
                                logged_in=user)
-    else:
-        return abort(404)
+    return abort(404)
 
 
 @app.route('/product/<int:product_id>/news/<int:news_id>')
 def news(product_id, news_id):
-    user = check_for_logged_in()
+    user = get_user()
     software = Software.query.get(product_id)
     if user:
         is_developer = software.user_id == user.id
     else:
         is_developer = False
-    software = Software.query.get(product_id)
     if software:
         news = News.query.get(news_id)
         if news:
@@ -148,10 +151,19 @@ def news(product_id, news_id):
 
 
 @app.route('/product/<int:product_id>/news/add_news', methods=['GET', 'POST'])
+# The standard model for all of the add/delete pages is roughly the following:
+# user = get_user()
+# item = get_item(user, id, type)
+# if isinstance(item, int):
+#     return(abort(item)) # return error if user isn't logged in/couldn't retrieve item
+# if condition:
+#     <action> # addition/deletion of content
+# return abort(403) # return error if the user doesn't meet the conditions, covered by
+#                     the original abort() in some cases
 def add_news(product_id):
     form = AddNewsForm()
-    user = check_for_logged_in()
-    product = check_for_permission(user, product_id, Software)
+    user = get_user()
+    product = get_item(user, product_id, Software)
     if isinstance(product, int):
         return abort(product)
     if product.user_id == user.id:
@@ -164,12 +176,13 @@ def add_news(product_id):
             return redirect(url_for('all_news', id=product_id))
         return render_template('add_news.html', title='Smoke - Add News',
                                 logged_in=user, form=form)
+    return abort(403)
 
 
 @app.route('/add_software', methods=['GET', 'POST'])
 def add_software():
     form = AddSoftwareForm()
-    user = check_for_logged_in()
+    user = get_user()
     if user:
         if user.account_type == 'dev':
             if form.validate_on_submit():
@@ -212,8 +225,8 @@ def add_software():
 @app.route('/product/<int:id>/add_review', methods=['GET', 'POST'])
 def add_review(id):
     form = AddReviewForm()
-    user = check_for_logged_in()
-    software = check_for_permission(user, id, Software)
+    user = get_user()
+    software = get_item(user, id, Software)
     if isinstance(software, int):
         return abort(software)
     if software.user_id != user.id:
@@ -242,8 +255,8 @@ def add_review(id):
 @app.route('/product/<int:product_id>/news/<int:news_id>/add_comment', methods=['GET', 'POST'])
 def add_comment(product_id, news_id):
     form = AddCommentForm()
-    user = check_for_logged_in()
-    news = check_for_permission(user, news_id, News)
+    user = get_user()
+    news = get_item(user, news_id, News)
     if isinstance(news, int):
         return abort(news)
     if form.validate_on_submit():
@@ -268,8 +281,8 @@ def add_comment(product_id, news_id):
 
 @app.route('/delete_comment/<int:id>')
 def delete_comment(id):
-    user = check_for_logged_in()
-    comment = check_for_permission(user, id, Comment)
+    user = get_user()
+    comment = get_item(user, id, Comment)
     if isinstance(comment, int):
         return abort(comment)
     if comment.user_id == user.id:
@@ -282,8 +295,8 @@ def delete_comment(id):
 
 @app.route('/delete_news/<int:id>')
 def delete_news(id):
-    user = check_for_logged_in()
-    news = check_for_permission(user, id, News)
+    user = get_user()
+    news = get_item(user, id, News)
     if isinstance(news, int):
         return abort(news)
     if news.user_id == user.id:
@@ -297,8 +310,8 @@ def delete_news(id):
 
 @app.route('/delete_software/<int:id>')
 def delete_software(id):
-    user = check_for_logged_in()
-    software = check_for_permission(user, id, Software)
+    user = get_user()
+    software = get_item(user, id, Software)
     if isinstance(software, int):
         return abort(software)
     if software.user_id == user.id:
@@ -318,30 +331,28 @@ def delete_software(id):
 
 @app.route('/delete_review/<int:id>')
 def delete_review(id):
-    review = Review.query.get(id)
-    if review:
-        user = check_for_logged_in()
-        if user:
-            if review in user.reviews:
-                product_id = review.software_id
-                db.session.delete(review)
-                db.session.commit()
-                return redirect(url_for('product_page', id=product_id))
-            return abort(403)
-        return abort(403)
-    return abort(404)
+    user = get_user()
+    review = get_item(user, id, Review)
+    if isinstance(review, int):
+        return abort(review)
+    if review.user_id == user.id:
+        product_id = review.software_id
+        db.session.delete(review)
+        db.session.commit()
+        return redirect(url_for('product_page', id=product_id))
+    return abort(403)
 
 
 @app.errorhandler(404)
 def page_not_found(error):
-    user = check_for_logged_in()
+    user = get_user()
     return render_template('not_found.html', title='Smoke - 404',
                            logged_in=user)
 
 
 @app.errorhandler(403)
 def not_allowed(error):
-    user = check_for_logged_in()
+    user = get_user()
     return render_template('not_allowed.html', title='Smoke - 403',
                            logged_in=user)
 
